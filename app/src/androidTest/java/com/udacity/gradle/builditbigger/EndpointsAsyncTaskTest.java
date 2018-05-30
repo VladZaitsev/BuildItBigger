@@ -30,17 +30,18 @@ public class EndpointsAsyncTaskTest {
 
     @Test
     public void testDoInBackground() throws InterruptedException {
-        new EndpointsAsyncTask(new EndpointsAsyncTask.getJokeListener() {
-            @Override
-            public void onComplete(String joke, Exception e) {
-                result = joke;
-                error = e;
-                count.countDown();
-            }
+        new EndpointsAsyncTask((joke, e) -> {
+            result = joke;
+            error = e;
+            count.countDown();
         }).execute();
         count.await();
 
-        assertNull(error);
-        assertTrue(!TextUtils.isEmpty(result));
+        if (error == null) {
+            assertTrue(!TextUtils.isEmpty(result));
+        } else {
+            assertNull(result);
+            assertTrue(!TextUtils.isEmpty(error.getMessage()));
+        }
     }
 }

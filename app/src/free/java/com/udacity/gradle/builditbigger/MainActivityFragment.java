@@ -3,6 +3,7 @@ package com.udacity.gradle.builditbigger;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,9 +20,20 @@ import com.udacity.gradle.builditbigger.jokeactivity.JokeActivity;
  */
 public class MainActivityFragment extends Fragment {
 
+    private EndpointsAsyncTask task;
 
     public MainActivityFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        task = new EndpointsAsyncTask((joke, e) -> {
+            Intent intent = new Intent(getActivity(), JokeActivity.class);
+            intent.putExtra(JokeActivity.EXTRA_JOKE, joke);
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -44,11 +56,13 @@ public class MainActivityFragment extends Fragment {
         return root;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        task.onCancelled();
+    }
+
     public void tellJoke() {
-        new EndpointsAsyncTask((joke, e) -> {
-            Intent intent = new Intent(getActivity(), JokeActivity.class);
-            intent.putExtra(JokeActivity.EXTRA_JOKE, joke);
-            startActivity(intent);
-        }).execute();
+        task.execute();
     }
 }
